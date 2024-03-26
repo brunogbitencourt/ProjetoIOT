@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <FreeRTOS.h>
+//#include <FreeRTOS.h>
 #include "Pump.h"
 
 // Defina os pinos de saída e de controle PWM
