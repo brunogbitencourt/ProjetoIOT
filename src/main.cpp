@@ -13,6 +13,8 @@ Pump pump(OUTPUT_PIN, 0);
 void setup() {
   // put your setup code here, to run once:
 
+  Serial.begin(115200);
+
 
   xTaskCreate(pumpTask, "Pump Task", 1024, NULL, 1, NULL);
 
@@ -34,9 +36,12 @@ void pumpTask(void *pvParameters) {
     while(1) {
         // Lógica da tarefa da bomba aqui
         // Por exemplo, ligue e desligue a bomba em intervalos regulares
+        Serial.println("Pump Task");
+        Serial.println("Ligando a bomba");
         pump.turnOn(255); // Ligar a bomba com saída PWM de 255 (100%)
         vTaskDelay(pdMS_TO_TICKS(5000)); // Espera 1 segundo
         pump.turnOff(); // Desligar a bomba
+        Serial.println("Desligando a bomba");
         vTaskDelay(pdMS_TO_TICKS(5000)); // Espera 5 segundos
     }
 }
