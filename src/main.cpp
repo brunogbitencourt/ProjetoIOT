@@ -9,11 +9,11 @@
 #define TRIG_PIN_S1 4
 #define ECHO_PIN_S1 5
 
-// void pumpTask(void *pvParameters);
+void pumpTask(void *pvParameters);
 
 void usTask(void *pvParameters);
 
-USSensor us_s1(TRIG_PIN_S1, ECHO_PIN_S1);
+USSensor us_s1(ECHO_PIN_S1, TRIG_PIN_S1);
 
 Pump pump(OUTPUT_PIN, 0);
 
@@ -23,11 +23,11 @@ void setup() {
   Serial.begin(115200);
 
 
-  // xTaskCreate(pumpTask, "Pump Task", 1024, NULL, 1, NULL);
+  xTaskCreate(pumpTask, "Pump Task", 1024, NULL, 1, NULL);
   
   xTaskCreate(usTask, "Uss Task", 1024, NULL, 1, NULL);
 
-  vTaskStartScheduler();
+  // vTaskStartScheduler();
 
 
 }

@@ -4,7 +4,7 @@
 #define SOUND_SPEED 0.034
 #define CM_TO_INCH 0.393701
 
-USSensor::USSensor(int inputPin, int pwmOutputPin)
+USSensor::USSensor(int echoPin, int triggerPin)
 {
     this->echoPin = echoPin;
     this->triggerPin = triggerPin;
@@ -35,16 +35,15 @@ float USSensor::getDistance()
     long duration;
 
     digitalWrite(triggerPin, LOW);
-    // vTaskDelay(pdMS_TO_TICKS(0.02));
-    delayMicroseconds(2);
+    vTaskDelay(pdMS_TO_TICKS(0.002));
     // Sets the triggerPin on HIGH state for 10 micro seconds
     digitalWrite(triggerPin, HIGH);
-    // vTaskDelay(pdMS_TO_TICKS(0.01));
-    delayMicroseconds(10);
+    vTaskDelay(pdMS_TO_TICKS(0.01));
     digitalWrite(triggerPin, LOW);
 
+    duration = pulseIn(echoPin, HIGH);
+
     distance = duration * SOUND_SPEED/2;
-    Serial.println(duration);
 
     return this->distance;
 }
