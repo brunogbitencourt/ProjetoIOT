@@ -20,27 +20,28 @@ Actuator::~Actuator(){
 }
 
 int Actuator::getID(){
-    return this->id;
+    return (MODE == 0) ? random(1, 8) : this->id;
 }
 
 string Actuator::getDescription(){
-    return this->description;
+    string atuador[3] = {"Pump", "Motor", "Valve"};
+    return (MODE == 0) ? atuador[random(0, 3)] : this->description;
 }
 
 int Actuator::getType(){
-    return this->type;
+    return (MODE == 0) ? random(0, 3) : this->type;    
 }
 
 int Actuator::getOutputPin(){    
-    return this->outputPin;
+    return (MODE == 0) ? random(1, 8) : this->outputPin;
 }
 
 int Actuator::getState(){
-    return (MODE == 1) ?  this->state : random(0, 3);
+    return (MODE == 0) ? random(0, 3) :  this->state;
 }
 
 int Actuator::getPwmOutput(){
-    return (MODE ==1) ? this->pwmOutput : random(0, 255);
+    return (MODE == 0) ? random(0, 255) : this->pwmOutput;
 }
 
 void Actuator::setState(int state){

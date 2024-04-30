@@ -3,17 +3,15 @@
 
 
 // Actuators pins definition
-#define PUMP1_PIN  1
-#define PUMP2_PIN  2
-#define PUMP3_PIN  3
+#define PUMP1_PIN  23
+#define PUMP2_PIN  22
+#define PUMP3_PIN  21
 
-#define MOTOR1_PIN 4
-#define MOTOR2_PIN 5
+#define MOTOR1_PIN 19
+#define MOTOR2_PIN 18
 
-#define VALVE1_PIN 6
-#define VALVE2_PIN 7
-
-
+#define VALVE1_PIN 17
+#define VALVE2_PIN 16
 
 
 
