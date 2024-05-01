@@ -1,4 +1,3 @@
-#pragma once
 #include <Arduino.h>
 #include <string>
 #include "GlobalConfig.h"
@@ -13,6 +12,7 @@ Actuator::Actuator(int id, string description, int type, int outputPin,  int sta
     this->outputPin = outputPin;
     this->state = state;
     this->pwmOutput = 0;
+    pinMode(this->outputPin, OUTPUT);
 }
 
 Actuator::~Actuator(){
@@ -49,7 +49,7 @@ void Actuator::setState(int state){
 }
 
 void Actuator::setPwmOutput(int pwmOutput){        
-    pwmOutput = (this->type == 2) ? 255 : pwmOutput;    
+    pwmOutput = (this->type == 2 && pwmOutput != 0) ? 255 : pwmOutput;    
     analogWrite(this->outputPin, pwmOutput);
     this->pwmOutput = pwmOutput;
 }
