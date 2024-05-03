@@ -3,10 +3,20 @@
 #include "GlobalConfig.h"
 
 #include "Actuator.h"
+#include "WiFiClient.h"
+#include "MQTTClient.h"
 
 using namespace std;
 
+
+//-----------------------------Wifi Parameters--------------------------------//
+WifiClient wifiClient; 
+
+//-----------------------------MQTT Parameters--------------------------------//
+
 void actuatorTask(void *pvParameters);
+void wifiTask(void *pvParameters);
+
 
 //-----------------------------Actuators--------------------------------
 
@@ -27,9 +37,11 @@ void setup() {
  
   Serial.begin(115200);
 
-  Serial.println("Iniciando o sistema");
+  xTaskCreate(wifiTask, "Wifi Task", 2048, NULL, 1, NULL);
 
   xTaskCreate(actuatorTask, "Pump 01 Task", 4096, NULL, 1, NULL);
+
+
 }
   /*xTaskCreate(actuatorTask, "Pump 02 Task",  4096, &pump2, 1, NULL);
   xTaskCreate(actuatorTask, "Pump 03 Task",  4096, &pump3, 1, NULL);
@@ -46,10 +58,8 @@ void loop() {
 }
 
 
-void actuatorTask(void *pvParameters){
-
-     // concatena id com a letra a
-  
+void actuatorTask(void *pvParameters)
+{  
   while(1) { 
     if (Serial.available() > 0) {      
       String arduinoString  = Serial.readString();
@@ -119,3 +129,15 @@ void actuatorTask(void *pvParameters){
     vTaskDelay(pdMS_TO_TICKS(200)); // Espera 5 segundos        
   }
 }
+
+
+void wifiTask(void *pvParameters)
+{
+  wifiClient.connect();
+  while(1) { 
+    wifiClient.loop();
+    vTaskDelay(pdMS_TO_TICKS(5000)); // Espera 5 segundos        
+  }
+}
+
+
