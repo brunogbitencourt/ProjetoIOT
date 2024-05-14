@@ -21,10 +21,10 @@
 //--------------------------------------------------------------------------------//
 //------------------------------Wifi Variables------------------------------------//
 //--------------------------------------------------------------------------------//
-#define WIFI_SSID "LIVE TIM_07A0_2G"
-#define WIFI_PASS "Brunolucas"
-// #define WIFI_SSID "iPhone B"
-// #define WIFI_PASS "bruno123"
+// #define WIFI_SSID "LIVE TIM_07A0_2G"
+// #define WIFI_PASS "Brunolucas"
+#define WIFI_SSID "Justweb2_wifi"
+#define WIFI_PASS "IOx20=30?"
 
 //--------------------------------------------------------------------------------//
 //------------------------------MQTT Variables------------------------------------//
@@ -33,3 +33,8 @@
 #define MOSQUITTO_BROKER_HOST "test.mosquitto.org"
 #define MOSQUITTO_BROKER_PORT 1883
 #define MOSQUITTO_USERNAME "IoT_Mosquitto"
+
+// Definições para o MQTT
+#define BROKER_MQTT "test.mosquitto.org"
+#define BROKER_PORT 1883
+#define ID_MQTT "IoT_PUC_SG_mqtt"

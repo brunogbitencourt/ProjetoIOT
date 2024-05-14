@@ -20,8 +20,9 @@ class WifiClient{
     public:
         WifiClient();
         ~WifiClient();
-        void connect();
+        void connectWiFi();
         void disconnect();        
         void reconnect();
         void loop(); 
+        bool isConnected(); // Método para verificar o estado de conexão
 };

@@ -4,7 +4,7 @@
 
 #include "Actuator.h"
 #include "WiFiClient.h"
-#include "MQTTClient.h"
+#include "MqttClient.h"
 
 using namespace std;
 
@@ -14,8 +14,11 @@ WifiClient wifiClient;
 
 //-----------------------------MQTT Parameters--------------------------------//
 
+MqttClient mqttClient(BROKER_MQTT, BROKER_PORT, ID_MQTT);
+
 void actuatorTask(void *pvParameters);
 void wifiTask(void *pvParameters);
+void mqttTask(void *pvParameters);
 
 
 //-----------------------------Actuators--------------------------------
@@ -38,6 +41,8 @@ void setup() {
   Serial.begin(115200);
 
   xTaskCreate(wifiTask, "Wifi Task", 2048, NULL, 1, NULL);
+
+  xTaskCreate(mqttTask, "MQTT Task", 4096, NULL, 1, NULL);
 
   xTaskCreate(actuatorTask, "Pump 01 Task", 4096, NULL, 1, NULL);
 
@@ -133,11 +138,22 @@ void actuatorTask(void *pvParameters)
 
 void wifiTask(void *pvParameters)
 {
-  wifiClient.connect();
+  wifiClient.connectWiFi();
   while(1) { 
     wifiClient.loop();
     vTaskDelay(pdMS_TO_TICKS(5000)); // Espera 5 segundos        
   }
 }
 
-
+void mqttTask(void *pvParameters) {
+    while (true) {
+        if (wifiClient.isConnected()) { // Verifica se o WiFi está conectado
+            if (!mqttClient.isConnected()) { // Verifica se o MQTT está conectado
+                Serial.println("Attempting MQTT connection...");
+                mqttClient.setup();
+            }
+            mqttClient.loop();
+        }
+        vTaskDelay(pdMS_TO_TICKS(5000)); // Ajuste o atraso conforme necessário
+    }
+}
