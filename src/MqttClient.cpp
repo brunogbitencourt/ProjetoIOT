@@ -40,6 +40,10 @@ void MqttClient::callback(char* topic, byte* payload, unsigned int length) {
     // Implemente o que deseja fazer com a mensagem recebida
 }
 
+bool MqttClient::connect() {
+    return mqttClient.connect(mqttId);
+}
+
 void MqttClient::reconnect() {
     while (!mqttClient.connected()) {
         Serial.println("Attempting MQTT connection...");
@@ -49,7 +53,11 @@ void MqttClient::reconnect() {
             Serial.print("failed, rc=");
             Serial.print(mqttClient.state());
             Serial.println(" try again in 5 seconds");
-            delay(5000);
+            vTaskDelay(pdMS_TO_TICKS(5000));
         }
     }
+}
+
+int MqttClient::state() {
+    return mqttClient.state();
 }

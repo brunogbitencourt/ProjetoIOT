@@ -7,6 +7,9 @@
 
 using namespace std;
 
+#ifndef MqttClient_h
+#define MqttClient_h
+
 class MqttClient {
 private:
     WiFiClient espClient; // Objeto para conexão com o MQTT
@@ -24,5 +27,10 @@ public:
     void subscribe(const char* topic);
     bool isConnected();
     void callback(char* topic, byte* payload, unsigned int length);
+    bool connect(); // Adicionado
     void reconnect();
+    int state(); // Adicionado
 };
+
+#endif
+
