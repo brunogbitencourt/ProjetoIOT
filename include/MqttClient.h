@@ -4,6 +4,10 @@
 #include <string>
 #include "WifiClient.h"
 #include <PubSubClient.h>
+#include <freertos/queue.h>
+
+#define MAX_PAYLOAD_LENGTH 256
+#define QUEUE_LENGTH 10
 
 using namespace std;
 
@@ -18,6 +22,8 @@ private:
     int port;
     const char* mqttId;
 
+    QueueHandle_t mqttQueue;
+
     void callback(char* topic, byte* payload, unsigned int length);
 
 public:
@@ -31,6 +37,12 @@ public:
     bool connect(); // Adicionado
     void reconnect();
     int state(); // Adicionado
+    bool receiveMessage(char* topic, char* payload);
+};
+
+struct MqttMessage {
+    char topic[128];
+    char payload[MAX_PAYLOAD_LENGTH];
 };
 
 #endif

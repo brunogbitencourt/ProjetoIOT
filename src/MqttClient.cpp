@@ -1,9 +1,15 @@
 #include "MqttClient.h"
 
 MqttClient::MqttClient(const char* broker, int port, const char* mqttId)
-    : mqttClient(espClient), broker(broker), port(port), mqttId(mqttId) {}
+    : mqttClient(espClient), broker(broker), port(port), mqttId(mqttId) {
+        mqttQueue = xQueueCreate(QUEUE_LENGTH, sizeof(MqttMessage));
+    }
 
-MqttClient::~MqttClient() {}
+MqttClient::~MqttClient() {
+    if (mqttQueue != NULL) {
+        vQueueDelete(mqttQueue);
+    }
+}
 
 void MqttClient::setup() {
     mqttClient.setServer(broker, port);
@@ -37,13 +43,28 @@ bool MqttClient::isConnected() {
 }
 
 void MqttClient::callback(char* topic, byte* payload, unsigned int length) {
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("]: ");
-    for (unsigned int i = 0; i < length; i++) {
-        Serial.print((char)payload[i]);
+    if (length < MAX_PAYLOAD_LENGTH) {
+        MqttMessage message;
+        strncpy(message.topic, topic, sizeof(message.topic));
+        strncpy(message.payload, (char*)payload, length);
+        message.payload[length] = '\0';
+
+        if (xQueueSend(mqttQueue, &message, portMAX_DELAY) != pdPASS) {
+            Serial.println("Failed to enqueue MQTT message");
+        }
+    } else {
+        Serial.println("Received payload is too large");
     }
-    Serial.println();
+}
+
+bool MqttClient::receiveMessage(char* topic, char* payload) {
+    MqttMessage message;
+    if (xQueueReceive(mqttQueue, &message, 0) == pdPASS) {
+        strncpy(topic, message.topic, sizeof(message.topic));
+        strncpy(payload, message.payload, MAX_PAYLOAD_LENGTH);
+        return true;
+    }
+    return false;
 }
 
 bool MqttClient::connect() {

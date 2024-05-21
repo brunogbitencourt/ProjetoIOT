@@ -23,6 +23,7 @@ void actuatorTask(void *pvParameters);
 void wifiTask(void *pvParameters);
 void mqttTask(void *pvParameters);
 void mqttListenTask(void *pvParameters);
+void mqttPublishTask(void *pvParameters);
 
 //-----------------------------Actuators--------------------------------//
 Actuator pump1(1, "Pump 1 - Tank 1", 0, PUMP1_PIN, 0);
@@ -44,12 +45,7 @@ void setup() {
     xTaskCreate(mqttTask, "MQTT Task", 4096, NULL, 1, NULL);
     xTaskCreate(mqttListenTask, "MQTT Listen Task", 4096, NULL, 1, NULL);
     xTaskCreate(actuatorTask, "Pump 01 Task", 4096, NULL, 1, NULL);
-    /*xTaskCreate(actuatorTask, "Pump 02 Task", 4096, &pump2, 1, NULL);
-    xTaskCreate(actuatorTask, "Pump 03 Task", 4096, &pump3, 1, NULL);
-    xTaskCreate(actuatorTask, "Motor 01 Task", 4096, &motor1, 1, NULL);
-    xTaskCreate(actuatorTask, "Motor 02 Task", 4096, &motor2, 1, NULL);
-    xTaskCreate(actuatorTask, "Valve 01 Task", 4096, &valve1, 1, NULL);
-    xTaskCreate(actuatorTask, "Valve 02 Task", 4096, &valve2, 1, NULL);*/
+    // xTaskCreate(mqttPublishTask, "MQTT Publish Task", 4096, NULL, 1, NULL);
 }
 
 void loop() {
@@ -57,10 +53,12 @@ void loop() {
 }
 
 void actuatorTask(void *pvParameters) {
+    char topic[128];
+    char payload[MAX_PAYLOAD_LENGTH];
+
     while(1) { 
-        if (Serial.available() > 0) {      
-            String arduinoString  = Serial.readString();
-            string valSerial = string(arduinoString.c_str());
+        if (mqttClient.receiveMessage(topic, payload)) {      
+            String valSerial = String(payload);
 
             if(valSerial == "a1l"){
                 Serial.println("Pump 1 - Turn On");
@@ -182,5 +180,20 @@ void mqttListenTask(void *pvParameters) {
             xSemaphoreTake(mqttMutex, portMAX_DELAY); // Aguarda até que a conexão esteja ativa
         }
         vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
+void mqttPublishTask(void *pvParameters) {
+    const char* topic = "sistema/actuator01";
+    const char* payload = "Hello from ESP32";
+
+    while (1) {
+        if (mqttClient.isConnected()) {
+            mqttClient.publish(topic, payload); // Envia a mensagem para o tópico
+            Serial.println("Message published");
+        } else {
+            Serial.println("MQTT not connected, cannot publish");
+        }
+        vTaskDelay(pdMS_TO_TICKS(5000)); // Ajuste o intervalo de publicação conforme necessário
     }
 }
