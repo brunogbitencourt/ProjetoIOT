@@ -18,6 +18,8 @@ private:
     int port;
     const char* mqttId;
 
+    void callback(char* topic, byte* payload, unsigned int length);
+
 public:
     MqttClient(const char* broker, int port, const char* mqttId);
     ~MqttClient();
@@ -26,7 +28,6 @@ public:
     void publish(const char* topic, const char* payload);
     void subscribe(const char* topic);
     bool isConnected();
-    void callback(char* topic, byte* payload, unsigned int length);
     bool connect(); // Adicionado
     void reconnect();
     int state(); // Adicionado

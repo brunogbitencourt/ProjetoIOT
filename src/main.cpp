@@ -128,10 +128,17 @@ void actuatorTask(void *pvParameters) {
 }
 
 void wifiTask(void *pvParameters) {
-    wifiClient.connectWiFi();
-    while(1) { 
-        wifiClient.loop();
-        vTaskDelay(pdMS_TO_TICKS(5000)); // Espera 5 segundos        
+    int counter = 1;
+    while (1) {
+        Serial.print("Attempt: ");
+        Serial.println(counter);
+        wifiClient.connectWiFi();
+        while (wifiClient.isConnected()) {
+            wifiClient.loop();
+            vTaskDelay(pdMS_TO_TICKS(5000)); // Espera 5 segundos
+        }
+        counter++;
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Espera 1 segundo antes de tentar reconectar
     }
 }
 
@@ -139,6 +146,7 @@ void mqttTask(void *pvParameters) {
     while (1) {
         if (wifiClient.isConnected()) { // Verifica se o WiFi está conectado
             if (!mqttClient.isConnected()) { // Verifica se o MQTT está conectado
+                mqttClient.setup();
                 Serial.println("Attempting MQTT connection...");
                 if (mqttClient.connect()) { // Tenta conectar
                     Serial.println("connected");

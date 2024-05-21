@@ -9,6 +9,7 @@
 using namespace std;
 
 class WifiClient{
+    private:
         string ssid;
         string password;
         bool connected;

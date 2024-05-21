@@ -37,7 +37,13 @@ bool MqttClient::isConnected() {
 }
 
 void MqttClient::callback(char* topic, byte* payload, unsigned int length) {
-    // Implemente o que deseja fazer com a mensagem recebida
+    Serial.print("Message arrived [");
+    Serial.print(topic);
+    Serial.print("]: ");
+    for (unsigned int i = 0; i < length; i++) {
+        Serial.print((char)payload[i]);
+    }
+    Serial.println();
 }
 
 bool MqttClient::connect() {
