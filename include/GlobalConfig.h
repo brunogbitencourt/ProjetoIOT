@@ -17,6 +17,14 @@
 //--------------------------------------------------------------------------------//
 //------------------------------Sensors Variables---------------------------------//
 //--------------------------------------------------------------------------------//
+#define SENSOR_D1_PIN 12
+#define SENSOR_D2_PIN 13
+#define SENSOR_A1_EPIN 2
+#define SENSOR_A1_TPIN 26
+#define SENSOR_A2_EPIN 32
+#define SENSOR_A2_TPIN 15
+
+
 
 //--------------------------------------------------------------------------------//
 //------------------------------Wifi Variables------------------------------------//
@@ -40,3 +48,10 @@
 #define BROKER_MQTT "test.mosquitto.org"
 #define BROKER_PORT 1883
 #define ID_MQTT "IoT_PUC_SG_mqtt1"
+
+// Defina o intervalo de valores aleatórios
+#define ANALOG_MIN 0
+#define ANALOG_MAX 1023
+#define DIGITAL_VALUES {0, 1}
+
+#define SOUND_SPEED 0.034

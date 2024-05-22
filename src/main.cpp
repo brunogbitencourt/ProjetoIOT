@@ -7,6 +7,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/semphr.h>
+#include "SensorManager.h"
 
 using namespace std;
 
@@ -19,11 +20,15 @@ WifiClient wifiClient;
 //-----------------------------MQTT Parameters--------------------------------//
 MqttClient mqttClient(BROKER_MQTT, BROKER_PORT, ID_MQTT);
 
+SensorManager sensorManager(&mqttClient);
+
 void actuatorTask(void *pvParameters);
 void wifiTask(void *pvParameters);
 void mqttTask(void *pvParameters);
 void mqttListenTask(void *pvParameters);
 void mqttPublishTask(void *pvParameters);
+void sensorTask(void *pvParameters);
+void sensorToMqttTask(void *pvParameters);
 
 //-----------------------------Actuators--------------------------------//
 Actuator pump1(1, "Pump 1 - Tank 1", 0, PUMP1_PIN, 0);
@@ -37,6 +42,12 @@ Actuator valve2(7, "Valve 2 - Tank 2", 2, VALVE2_PIN, 0);
 void setup() {
     Serial.begin(115200);
 
+    // Adiciona sensores ao gerenciador
+    sensorManager.addSensor(new Sensor(1, "uss1", 1, SENSOR_A1_EPIN, SENSOR_A1_TPIN));
+    sensorManager.addSensor(new Sensor(2, "uss2", 1, SENSOR_A2_EPIN, SENSOR_A2_TPIN));
+    sensorManager.addSensor(new Sensor(3, "ds1", 2, SENSOR_D1_PIN, NULL));
+    sensorManager.addSensor(new Sensor(4, "ds2", 2, SENSOR_D2_PIN, NULL));
+
     // Inicializa o mutex
     mqttMutex = xSemaphoreCreateBinary();
 
@@ -45,6 +56,8 @@ void setup() {
     xTaskCreate(mqttTask, "MQTT Task", 4096, NULL, 1, NULL);
     xTaskCreate(mqttListenTask, "MQTT Listen Task", 4096, NULL, 1, NULL);
     xTaskCreate(actuatorTask, "Pump 01 Task", 4096, NULL, 1, NULL);
+    xTaskCreate(sensorTask, "Sensor Task", 4096, NULL, 1, NULL);
+    xTaskCreate(sensorToMqttTask, "Sensor to MQTT Task", 4096, NULL, 1, NULL);
     // xTaskCreate(mqttPublishTask, "MQTT Publish Task", 4096, NULL, 1, NULL);
 }
 
@@ -176,7 +189,7 @@ void mqttListenTask(void *pvParameters) {
             mqttClient.loop(); // Processa mensagens MQTT
         } else {
             isSubscribed = false; // Reinicia a inscrição se a conexão for perdida
-            Serial.println("Waiting for MQTT connection...");
+            // Serial.println("Waiting for MQTT connection...");
             xSemaphoreTake(mqttMutex, portMAX_DELAY); // Aguarda até que a conexão esteja ativa
         }
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -195,5 +208,19 @@ void mqttPublishTask(void *pvParameters) {
             Serial.println("MQTT not connected, cannot publish");
         }
         vTaskDelay(pdMS_TO_TICKS(5000)); // Ajuste o intervalo de publicação conforme necessário
+    }
+}
+
+void sensorTask(void *pvParameters) {
+    while (1) {
+        sensorManager.readSensors();
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+void sensorToMqttTask(void *pvParameters) {
+    while (1) {
+        sensorManager.sendToMqtt();
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
