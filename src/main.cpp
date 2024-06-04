@@ -207,7 +207,7 @@ void mqttPublishTask(void *pvParameters) {
         } else {
             Serial.println("MQTT not connected, cannot publish");
         }
-        vTaskDelay(pdMS_TO_TICKS(5000)); // Ajuste o intervalo de publicação conforme necessário
+        vTaskDelay(pdMS_TO_TICKS(500)); // Ajuste o intervalo de publicação conforme necessário
     }
 }
 
@@ -221,6 +221,6 @@ void sensorTask(void *pvParameters) {
 void sensorToMqttTask(void *pvParameters) {
     while (1) {
         sensorManager.sendToMqtt();
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(60000));
     }
 }

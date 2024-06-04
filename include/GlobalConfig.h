@@ -55,3 +55,8 @@
 #define DIGITAL_VALUES {0, 1}
 
 #define SOUND_SPEED 0.034
+
+// Configuração NTP
+#define NTP_SERVER "pool.ntp.org"
+#define GMT_OFFSET_SEC 0 // Ajuste conforme seu fuso horário
+#define DAYLIGHT_OFFSET_SEC 0

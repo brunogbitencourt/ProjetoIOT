@@ -1,23 +1,22 @@
-#pragma once
+#ifndef SENSOR_H
+#define SENSOR_H
 
 #include <Arduino.h>
 #include <string>
 
-using namespace std;
-
 class Sensor {
 public:
-    Sensor(int id, string description, int type, int outPutPin1, int outPutPin2);
+    Sensor(int id, const std::string& description, int type, int outPutPin1, int outPutPin2);
     ~Sensor();
 
-    int getId();
-    string getDescription();
-    int getType();
-    int getOutPutPin1();
-    int getOutPutPin2();
+    int getId() const;
+    std::string getDescription() const;
+    int getType() const;
+    int getOutPutPin1() const;
+    int getOutPutPin2() const;
     double getAnalogValue();
     bool getDigitalValue();
-    long getTimeStamp();
+    long getTimeStamp() const;
 
     void setAnalogValue(double value);
     void setDigitalValue(bool value);
@@ -27,11 +26,13 @@ public:
 
 private:
     int id;
-    string description;
+    std::string description;
     int type;
     int outPutPin1;
     int outPutPin2;
     double analogValue;
     bool digitalValue;
-    long timeStamp;  // Timestamp in milliseconds
+    long timeStamp;
 };
+
+#endif // SENSOR_H

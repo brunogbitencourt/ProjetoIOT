@@ -17,6 +17,8 @@ class WifiClient{
         SemaphoreHandle_t wifiSemaphore;
         WiFiClientSecure espClient; // Cria o objeto espClient
 
+        void configureNTP();
+
 
     public:
         WifiClient();

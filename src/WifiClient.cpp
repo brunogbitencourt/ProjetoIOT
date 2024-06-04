@@ -39,6 +39,7 @@ void WifiClient::connectWiFi()
                 this->reconnecting = false;
                 Serial.println("");
                 Serial.println("WiFi connected!");
+                this->configureNTP(); // Configura o NTP após a conexão WiFi ser estabelecida
             }
             else
             {
@@ -91,4 +92,15 @@ void WifiClient::loop()
 bool WifiClient::isConnected() // Implementação do método isConnected()
 {
     return this->connected;
+}
+
+void WifiClient::configureNTP() // Configuração NTP
+{
+    configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER);
+    Serial.println("Configuring time with NTP");
+    while (time(nullptr) < 8 * 3600 * 2) { // Espera até que o tempo seja atualizado
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("Time synchronized");
 }
