@@ -31,13 +31,13 @@ void sensorTask(void *pvParameters);
 void sensorToMqttTask(void *pvParameters);
 
 //-----------------------------Actuators--------------------------------//
-Actuator pump1(1, "Pump 1 - Tank 1", 0, PUMP1_PIN, 0);
-Actuator pump2(2, "Pump 2 - Tank 1", 0, PUMP2_PIN, 0);
-Actuator pump3(3, "Pump 3 - Tank 2", 0, PUMP3_PIN, 0);
-Actuator motor1(4, "Motor 1 - Tank 1", 1, MOTOR1_PIN, 0);
-Actuator motor2(5, "Motor 2 - Tank 2", 1, MOTOR2_PIN, 0);
-Actuator valve1(6, "Valve 1 - Tank 1", 2, VALVE1_PIN, 0);
-Actuator valve2(7, "Valve 2 - Tank 2", 2, VALVE2_PIN, 0);
+Actuator pump1("AP_01", "Pump 1 - Tank 1", 0, PUMP1_PIN, 0);
+Actuator pump2("AP_02", "Pump 2 - Tank 1", 0, PUMP2_PIN, 0);
+Actuator pump3("AP_03", "Pump 3 - Tank 2", 0, PUMP3_PIN, 0);
+Actuator motor1("AM_01", "Motor 1 - Tank 1", 1, MOTOR1_PIN, 0);
+Actuator motor2("AM_02", "Motor 2 - Tank 2", 1, MOTOR2_PIN, 0);
+Actuator valve1("AV_01", "Valve 1 - Tank 1", 2, VALVE1_PIN, 0);
+Actuator valve2("AV_02", "Valve 2 - Tank 2", 2, VALVE2_PIN, 0);
 
 void setup() {
     Serial.begin(115200);

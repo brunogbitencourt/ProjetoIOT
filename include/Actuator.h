@@ -8,7 +8,7 @@ using namespace std;
 class Actuator{
 
     private:
-        int id;
+        string id;
         string description;
         int type;         
         int outputPin;
@@ -18,9 +18,9 @@ class Actuator{
 
 
     public:
-        Actuator(int id, string description, int typeW, int outputPin,  int state);
+        Actuator(string id, string description, int typeW, int outputPin,  int state);
         ~Actuator();
-        int getID();
+        string getID();
         string getDescription();
         int getType();
         int getOutputPin();

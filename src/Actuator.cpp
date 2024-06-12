@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Actuator::Actuator(int id, string description, int type, int outputPin,  int state){
+Actuator::Actuator(string id, string description, int type, int outputPin,  int state){
     this->id = id;
     this->description = description;
     this->type = type;    
@@ -19,29 +19,29 @@ Actuator::~Actuator(){
     //Destructor
 }
 
-int Actuator::getID(){
-    return (MODE == 0) ? random(1, 8) : this->id;
+string Actuator::getID(){
+    return this->id;
 }
 
 string Actuator::getDescription(){
     string atuador[3] = {"Pump", "Motor", "Valve"};
-    return (MODE == 0) ? atuador[random(0, 3)] : this->description;
+    return this->description;
 }
 
 int Actuator::getType(){
-    return (MODE == 0) ? random(0, 3) : this->type;    
+    return this->type;    
 }
 
 int Actuator::getOutputPin(){    
-    return (MODE == 0) ? random(1, 8) : this->outputPin;
+    return this->outputPin;
 }
 
 int Actuator::getState(){
-    return (MODE == 0) ? random(0, 3) :  this->state;
+    return this->state;
 }
 
 int Actuator::getPwmOutput(){
-    return (MODE == 0) ? random(0, 255) : this->pwmOutput;
+    return this->pwmOutput;
 }
 
 void Actuator::setState(int state){

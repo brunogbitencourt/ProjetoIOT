@@ -36,13 +36,16 @@ void SensorManager::readSensors() {
 void SensorManager::sendToMqtt() {
     char message[2048];
     while (this->getMessageFromQueue(message, sizeof(message))) {
+        Serial.print("Sendding message to topic: ");
+        Serial.println("sensors/data");
+        Serial.println(message);
         this->mqttClient->publish("sensors/data", message);
     }
 }
 
 void SensorManager::addMessageToQueue(const char* message) {
-    Serial.println("Adding message to queue:");
-    Serial.println(message);
+    // Serial.println("Adding message to queue:");
+    // Serial.println(message);
     if (xQueueSend(this->sensorQueue, message, portMAX_DELAY) != pdPASS) {
         Serial.println("Failed to add message to queue");
     }
@@ -50,7 +53,7 @@ void SensorManager::addMessageToQueue(const char* message) {
 
 bool SensorManager::getMessageFromQueue(char* messageBuffer, int bufferSize) {
     if (xQueueReceive(this->sensorQueue, messageBuffer, 0) == pdPASS) {
-        Serial.println("Message retrieved from queue");
+        // Serial.println("Message retrieved from queue");
         return true;
     } else {
         Serial.println("Failed to retrieve message from queue");
