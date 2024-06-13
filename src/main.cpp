@@ -43,10 +43,10 @@ void setup() {
     Serial.begin(115200);
 
     // Adiciona sensores ao gerenciador
-    sensorManager.addSensor(new Sensor(1, "uss1", 1, SENSOR_A1_EPIN, SENSOR_A1_TPIN));
-    sensorManager.addSensor(new Sensor(2, "uss2", 1, SENSOR_A2_EPIN, SENSOR_A2_TPIN));
-    sensorManager.addSensor(new Sensor(3, "ds1", 2, SENSOR_D1_PIN, NULL));
-    sensorManager.addSensor(new Sensor(4, "ds2", 2, SENSOR_D2_PIN, NULL));
+    sensorManager.addSensor(new Sensor("uss1", "Sensor Ultrassonico 1", 1, SENSOR_A1_EPIN, SENSOR_A1_TPIN));
+    sensorManager.addSensor(new Sensor("uss2", "Sensor Ultrassonico 2", 1, SENSOR_A2_EPIN, SENSOR_A2_TPIN));
+    sensorManager.addSensor(new Sensor("ds1", "Sensor Digital 1", 2, SENSOR_D1_PIN, NULL));
+    sensorManager.addSensor(new Sensor("ds2", "Sensor Digital 1", 2, SENSOR_D2_PIN, NULL));
 
     // Inicializa o mutex
     mqttMutex = xSemaphoreCreateBinary();
@@ -221,6 +221,6 @@ void sensorTask(void *pvParameters) {
 void sensorToMqttTask(void *pvParameters) {
     while (1) {
         sensorManager.sendToMqtt();
-        vTaskDelay(pdMS_TO_TICKS(60000));
+        vTaskDelay(pdMS_TO_TICKS(20000));
     }
 }

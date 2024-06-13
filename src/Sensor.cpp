@@ -7,7 +7,7 @@
  * type = 2 Sensor de nível digital
 */
 
-Sensor::Sensor(int id, const std::string& description, int type, int outPutPin1, int outPutPin2)
+Sensor::Sensor(const std::string& id, const std::string& description, int type, int outPutPin1, int outPutPin2)
     : id(id), description(description), type(type), outPutPin1(outPutPin1), outPutPin2(outPutPin2),
       analogValue(0.0), digitalValue(false), timeStamp(millis()) {
     if (outPutPin2 != -1) {
@@ -20,7 +20,7 @@ Sensor::Sensor(int id, const std::string& description, int type, int outPutPin1,
 
 Sensor::~Sensor() {}
 
-int Sensor::getId() const {
+std::string Sensor::getId() const {
     return id;
 }
 

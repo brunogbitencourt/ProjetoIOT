@@ -78,22 +78,25 @@ void SensorManager::createSensorJson(Sensor* sensor, char* buffer, size_t buffer
     JsonObject sensors = root.createNestedObject("sensors");
     JsonObject sensorData = root.createNestedObject("sensors_data");
 
-    JsonObject sensorObj = sensors.createNestedObject(sensor->getDescription());
-    sensorObj["description"] = sensor->getDescription();
-    sensorObj["outputPin1"] = sensor->getOutPutPin1();
-    sensorObj["outputPin2"] = sensor->getOutPutPin2();
-    sensorObj["type"] = sensor->getType();
+    // Sensor information
+    JsonObject sensorObj = sensors.createNestedObject(sensor->getId());
+    sensorObj["Description"] = sensor->getDescription();
+    sensorObj["Id"] = sensor->getId();
+    sensorObj["OutputPin1"] = sensor->getOutPutPin1();
+    sensorObj["OutputPin2"] = sensor->getOutPutPin2();
+    sensorObj["Type"] = sensor->getType();
 
-    JsonObject sensorDataObj = sensorData.createNestedObject(sensor->getDescription()).createNestedObject(timeBuffer);
+    // Sensor data
+    JsonObject sensorDataObj = sensorData.createNestedObject(sensor->getId()).createNestedObject(timeBuffer);
     sensorDataObj["Id"] = sensor->getId();
-    if (sensor->getType() == 1) {
-        sensorDataObj["analogValue"] = sensor->getAnalogValue();
-        sensorDataObj["unit"] = "analog unit"; // substitua pela unidade correta
-    } else if (sensor->getType() == 2) {
-        sensorDataObj["digitalValue"] = sensor->getDigitalValue();
-        sensorDataObj["unit"] = "digital unit"; // substitua pela unidade correta
+    sensorDataObj["Timestamp"] = timeBuffer;
+    if (sensor->getType() == 0) {
+        sensorDataObj["AnalogValue"] = sensor->getAnalogValue();
+        sensorDataObj["Unit"] = "analog unit"; // substitua pela unidade correta
+    } else if (sensor->getType() == 1) {
+        sensorDataObj["DigitalValue"] = sensor->getDigitalValue();
+        sensorDataObj["Unit"] = "digital unit"; // substitua pela unidade correta
     }
-    sensorDataObj["TimeStamp"] = timeBuffer;
 
     serializeJson(doc, buffer, bufferSize);
 }

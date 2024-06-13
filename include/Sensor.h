@@ -6,10 +6,10 @@
 
 class Sensor {
 public:
-    Sensor(int id, const std::string& description, int type, int outPutPin1, int outPutPin2);
+    Sensor(const std::string& id, const std::string& description, int type, int outPutPin1, int outPutPin2);
     ~Sensor();
 
-    int getId() const;
+    std::string getId() const;
     std::string getDescription() const;
     int getType() const;
     int getOutPutPin1() const;
@@ -25,7 +25,7 @@ public:
     bool getSimulatedDigitalValue();
 
 private:
-    int id;
+    std::string id;
     std::string description;
     int type;
     int outPutPin1;
