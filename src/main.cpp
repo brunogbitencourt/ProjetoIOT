@@ -8,6 +8,7 @@
 #include <freertos/task.h>
 #include <freertos/semphr.h>
 #include "SensorManager.h"
+#include "ActuatorManager.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ WifiClient wifiClient;
 MqttClient mqttClient(BROKER_MQTT, BROKER_PORT, ID_MQTT);
 
 SensorManager sensorManager(&mqttClient);
+ActuatorManager actuatorManager(&mqttClient);
 
 void actuatorTask(void *pvParameters);
 void wifiTask(void *pvParameters);
@@ -29,6 +31,9 @@ void mqttListenTask(void *pvParameters);
 void mqttPublishTask(void *pvParameters);
 void sensorTask(void *pvParameters);
 void sensorToMqttTask(void *pvParameters);
+void actuatorToMqttTask(void *pvParameters);
+void setActuatorPwmById(const String& id, int pwmValue);
+void analyzeSensorData(Sensor* sensor);
 
 //-----------------------------Actuators--------------------------------//
 Actuator pump1("AP_01", "Pump 1 - Tank 1", 0, PUMP1_PIN, 0);
@@ -46,7 +51,16 @@ void setup() {
     sensorManager.addSensor(new Sensor("uss1", "Sensor Ultrassonico 1", 1, SENSOR_A1_EPIN, SENSOR_A1_TPIN));
     sensorManager.addSensor(new Sensor("uss2", "Sensor Ultrassonico 2", 1, SENSOR_A2_EPIN, SENSOR_A2_TPIN));
     sensorManager.addSensor(new Sensor("ds1", "Sensor Digital 1", 2, SENSOR_D1_PIN, NULL));
-    sensorManager.addSensor(new Sensor("ds2", "Sensor Digital 1", 2, SENSOR_D2_PIN, NULL));
+    sensorManager.addSensor(new Sensor("ds2", "Sensor Digital 2", 2, SENSOR_D2_PIN, NULL));
+
+    // Adiciona atuadores ao gerenciador
+    actuatorManager.addActuator(&pump1);
+    actuatorManager.addActuator(&pump2);
+    actuatorManager.addActuator(&pump3);
+    actuatorManager.addActuator(&motor1);
+    actuatorManager.addActuator(&motor2);
+    actuatorManager.addActuator(&valve1);
+    actuatorManager.addActuator(&valve2);
 
     // Inicializa o mutex
     mqttMutex = xSemaphoreCreateBinary();
@@ -58,6 +72,7 @@ void setup() {
     xTaskCreate(actuatorTask, "Pump 01 Task", 4096, NULL, 1, NULL);
     xTaskCreate(sensorTask, "Sensor Task", 4096, NULL, 1, NULL);
     xTaskCreate(sensorToMqttTask, "Sensor to MQTT Task", 4096, NULL, 1, NULL);
+    xTaskCreate(actuatorToMqttTask, "Actuator to MQTT Task", 4096, NULL, 1, NULL);
     // xTaskCreate(mqttPublishTask, "MQTT Publish Task", 4096, NULL, 1, NULL);
 }
 
@@ -70,71 +85,50 @@ void actuatorTask(void *pvParameters) {
     char payload[MAX_PAYLOAD_LENGTH];
 
     while(1) { 
-        if (mqttClient.receiveMessage(topic, payload)) {      
+        if (mqttClient.receiveMessage(topic, payload)) {   
+            // payload = "AP_XX-YY", onde "AP_XX" é o ID do atuador e "YY" é o valor em porcentagem para definir o PWM.   
             String valSerial = String(payload);
+            int hyphenIndex = valSerial.indexOf('-');
+            if (hyphenIndex != -1) {
+                String id = valSerial.substring(0, hyphenIndex);
+                int percentage = valSerial.substring(hyphenIndex + 1).toInt();
+                int pwmValue = map(percentage, 0, 100, 0, 255);
 
-            if(valSerial == "a1l"){
-                Serial.println("Pump 1 - Turn On");
-                pump1.setPwmOutput(255);
-            }      
-            else if (valSerial == "a1d"){
-                Serial.println("Pump 1 - Turn Off");
-                pump1.setPwmOutput(0);        
-            }
-            else if (valSerial == "a2l"){
-                Serial.println("Pump 2 - Turn On");
-                pump2.setPwmOutput(255);
-            }      
-            else if (valSerial == "a2d"){
-                Serial.println("Pump 2 - Turn Off");
-                pump2.setPwmOutput(0);        
-            }
-            else if (valSerial == "a3l"){
-                Serial.println("Pump 3 - Turn On");
-                pump3.setPwmOutput(255);
-            }      
-            else if (valSerial == "a3d"){
-                Serial.println("Pump 3 - Turn Off");
-                pump3.setPwmOutput(0);        
-            }
-            else if (valSerial == "a4l"){
-                Serial.println("Motor 1 - Turn On");
-                motor1.setPwmOutput(255);
-            }      
-            else if (valSerial == "a4d"){
-                Serial.println("Motor 1 - Turn Off");
-                motor1.setPwmOutput(0);        
-            }
-            else if (valSerial == "a5l"){
-                Serial.println("Motor 2 - Turn On");
-                motor2.setPwmOutput(255);
-            }      
-            else if (valSerial == "a5d"){
-                Serial.println("Motor 2 - Turn Off");
-                motor2.setPwmOutput(0);        
-            }
-            else if (valSerial == "a6l"){
-                Serial.println("Valve 1 - Turn On");
-                valve1.setPwmOutput(255);
-            }      
-            else if (valSerial == "a6d"){
-                Serial.println("Valve 1 - Turn Off");
-                valve1.setPwmOutput(0);        
-            }
-            else if (valSerial == "a7l"){
-                Serial.println("Valve 2 - Turn On");
-                valve2.setPwmOutput(255);
-            }      
-            else if (valSerial == "a7d"){
-                Serial.println("Valve 2 - Turn Off");
-                valve2.setPwmOutput(0);
-            }
-            else{
-                Serial.println("Invalid Command");
+                setActuatorPwmById(id, pwmValue);
+            } else {
+                Serial.println("Invalid command format: " + valSerial);
             }
         }
 
         vTaskDelay(pdMS_TO_TICKS(200)); // Espera 200 ms        
+    }
+}
+
+void setActuatorPwmById(const String& id, int pwmValue) {
+    actuatorManager.updateActuatorPwmById(id.c_str(), pwmValue);
+    if (id == "AP_01") {
+        Serial.println("Setting Pump 1 PWM to " + String(pwmValue));
+        pump1.setPwmOutput(pwmValue);
+    } else if (id == "AP_02") {
+        Serial.println("Setting Pump 2 PWM to " + String(pwmValue));
+        pump2.setPwmOutput(pwmValue);
+    } else if (id == "AP_03") {
+        Serial.println("Setting Pump 3 PWM to " + String(pwmValue));
+        pump3.setPwmOutput(pwmValue);
+    } else if (id == "AM_01") {
+        Serial.println("Setting Motor 1 PWM to " + String(pwmValue));
+        motor1.setPwmOutput(pwmValue);
+    } else if (id == "AM_02") {
+        Serial.println("Setting Motor 2 PWM to " + String(pwmValue));
+        motor2.setPwmOutput(pwmValue);
+    } else if (id == "AV_01") {
+        Serial.println("Setting Valve 1 PWM to " + String(pwmValue));
+        valve1.setPwmOutput(pwmValue);
+    } else if (id == "AV_02") {
+        Serial.println("Setting Valve 2 PWM to " + String(pwmValue));
+        valve2.setPwmOutput(pwmValue);
+    } else {
+        Serial.println("Unknown actuator ID: " + id);
     }
 }
 
@@ -177,7 +171,7 @@ void mqttTask(void *pvParameters) {
 }
 
 void mqttListenTask(void *pvParameters) {
-    const char* topic = "sistema/sensor01";
+    const char* topic = TOPIC_ACTIONS;
     bool isSubscribed = false;
 
     while (1) {
@@ -214,6 +208,12 @@ void mqttPublishTask(void *pvParameters) {
 void sensorTask(void *pvParameters) {
     while (1) {
         sensorManager.readSensors();
+
+        // Analisar os dados dos sensores após a leitura
+        for (Sensor* sensor : sensorManager.getSensors()) {
+            analyzeSensorData(sensor);
+        }
+
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -222,5 +222,52 @@ void sensorToMqttTask(void *pvParameters) {
     while (1) {
         sensorManager.sendToMqtt();
         vTaskDelay(pdMS_TO_TICKS(20000));
+    }
+}
+
+void actuatorToMqttTask(void *pvParameters) {
+    while (1) {
+        actuatorManager.sendToMqtt();
+        vTaskDelay(pdMS_TO_TICKS(20000));
+    }
+}
+
+void analyzeSensorData(Sensor* sensor) {
+    if (sensor->getType() == 1) { // Analog sensor
+        int analogValue = sensor->getAnalogValue();
+
+        if (sensor->getId() == "uss1") {
+            if (analogValue < 100) {
+                setActuatorPwmById("AV_01", 255); // Valve 1 fully open
+            } else if (analogValue < 500) {
+                setActuatorPwmById("AV_01", 128); // Valve 1 partially open
+            } else {
+                setActuatorPwmById("AV_01", 0); // Valve 1 closed
+            }
+        } else if (sensor->getId() == "uss2") {
+            if (analogValue < 100) {
+                setActuatorPwmById("AV_02", 255); // Valve 2 fully open
+            } else if (analogValue < 500) {
+                setActuatorPwmById("AV_02", 128); // Valve 2 partially open
+            } else {
+                setActuatorPwmById("AV_02", 0); // Valve 2 closed
+            }
+        }
+    } else if (sensor->getType() == 2) { // Digital sensor
+        bool digitalValue = sensor->getDigitalValue();
+
+        if (sensor->getId() == "ds1") {
+            if (digitalValue) {
+                setActuatorPwmById("AM_01", 255); // Motor 1 on
+            } else {
+                setActuatorPwmById("AM_01", 0); // Motor 1 off
+            }
+        } else if (sensor->getId() == "ds2") {
+            if (digitalValue) {
+                setActuatorPwmById("AM_02", 255); // Motor 2 on
+            } else {
+                setActuatorPwmById("AM_02", 0); // Motor 2 off
+            }
+        }
     }
 }

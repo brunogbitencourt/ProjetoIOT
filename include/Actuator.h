@@ -20,7 +20,7 @@ class Actuator{
     public:
         Actuator(string id, string description, int typeW, int outputPin,  int state);
         ~Actuator();
-        string getID();
+        string getId();
         string getDescription();
         int getType();
         int getOutputPin();

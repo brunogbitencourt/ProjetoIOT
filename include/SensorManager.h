@@ -16,6 +16,8 @@ public:
     void addMessageToQueue(const char* message);
     bool getMessageFromQueue(char* messageBuffer, int bufferSize);
 
+    const std::vector<Sensor*>& getSensors() const; // Declaration of getSensors method
+
 private:
     std::vector<Sensor*> sensors;
     MqttClient* mqttClient;

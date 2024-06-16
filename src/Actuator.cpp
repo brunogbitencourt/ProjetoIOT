@@ -19,7 +19,7 @@ Actuator::~Actuator(){
     //Destructor
 }
 
-string Actuator::getID(){
+string Actuator::getId(){
     return this->id;
 }
 
