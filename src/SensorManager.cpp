@@ -6,7 +6,7 @@
 SensorManager::SensorManager(MqttClient *mqttClient)
     : mqttClient(mqttClient)
 {
-    this->sensorQueue = xQueueCreate(10, sizeof(char) * 512); // Ajuste o tamanho da fila e das mensagens conforme necessário
+    this->sensorQueue = xQueueCreate(10, sizeof(char) * 1024); // Ajuste o tamanho da fila e das mensagens conforme necessário
 }
 
 SensorManager::~SensorManager()
@@ -37,7 +37,7 @@ void SensorManager::readSensors()
         }
         sensor->updateTimeStamp();
 
-        char payload[512]; // Ajuste o tamanho do buffer aqui
+        char payload[1024]; // Ajuste o tamanho do buffer aqui
         this->createSensorJson(sensor, payload, sizeof(payload));
         this->addMessageToQueue(payload);
     }
@@ -45,7 +45,7 @@ void SensorManager::readSensors()
 
 void SensorManager::sendToMqtt()
 {
-    char message[512]; // Ajuste o tamanho do buffer aqui
+    char message[1024]; // Ajuste o tamanho do buffer aqui
     while (this->getMessageFromQueue(message, sizeof(message)))
     {
         // Serial.print("Sending message to topic: ");
@@ -78,11 +78,19 @@ bool SensorManager::getMessageFromQueue(char *messageBuffer, int bufferSize)
 
 void SensorManager::createSensorJson(Sensor *sensor, char *buffer, size_t bufferSize)
 {
-    StaticJsonDocument<512> doc; // Ajuste o tamanho do documento se necessário
+    StaticJsonDocument<1024> doc; // Ajuste o tamanho do documento se necessário
     char timeBuffer[25];
 
     // Obtém o tempo atual
     time_t now = time(nullptr);
+
+    // Verifica se o tempo atual é válido (ou seja, se foi atualizado)
+    if (now <= 0)
+    {
+        Serial.println("Time not updated. JSON not created.");
+        return;
+    }
+
     struct tm *p_tm = gmtime(&now);
 
     // Formata o tempo como string UTC
@@ -114,6 +122,7 @@ void SensorManager::createSensorJson(Sensor *sensor, char *buffer, size_t buffer
 
     serializeJson(doc, buffer, bufferSize);
 }
+
 
 const std::vector<Sensor*>& SensorManager::getSensors() const
 {
