@@ -55,7 +55,7 @@ double Sensor::getAnalogValue() {
 
             duration = pulseIn(outPutPin2, HIGH);
 
-            analogValue = duration * SOUND_SPEED / 2.0;
+            analogValue = TANK_HEIGHT - duration * SOUND_SPEED / 2.0;
 
             return analogValue;
         } else {
@@ -89,7 +89,8 @@ void Sensor::setDigitalValue(bool value) {
 }
 
 void Sensor::updateTimeStamp() {
-    timeStamp = millis();
+    // timeStamp = millis();
+    timeStamp = xTaskGetTickCount() * portTICK_PERIOD_MS;
 }
 
 double Sensor::getSimulatedAnalogValue() {

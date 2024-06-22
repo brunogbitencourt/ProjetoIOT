@@ -6,7 +6,7 @@
 SensorManager::SensorManager(MqttClient *mqttClient)
     : mqttClient(mqttClient)
 {
-    this->sensorQueue = xQueueCreate(10, sizeof(char) * 1024); // Ajuste o tamanho da fila e das mensagens conforme necessário
+    this->sensorQueue = xQueueCreate(10, sizeof(char) * 2048); // Ajuste o tamanho da fila e das mensagens conforme necessário
 }
 
 SensorManager::~SensorManager()
@@ -37,7 +37,7 @@ void SensorManager::readSensors()
         }
         sensor->updateTimeStamp();
 
-        char payload[1024]; // Ajuste o tamanho do buffer aqui
+        char payload[2048]; // Ajuste o tamanho do buffer aqui
         this->createSensorJson(sensor, payload, sizeof(payload));
         this->addMessageToQueue(payload);
     }
@@ -45,7 +45,7 @@ void SensorManager::readSensors()
 
 void SensorManager::sendToMqtt()
 {
-    char message[1024]; // Ajuste o tamanho do buffer aqui
+    char message[2048]; // Ajuste o tamanho do buffer aqui
     while (this->getMessageFromQueue(message, sizeof(message)))
     {
         // Serial.print("Sending message to topic: ");
@@ -78,7 +78,7 @@ bool SensorManager::getMessageFromQueue(char *messageBuffer, int bufferSize)
 
 void SensorManager::createSensorJson(Sensor *sensor, char *buffer, size_t bufferSize)
 {
-    StaticJsonDocument<1024> doc; // Ajuste o tamanho do documento se necessário
+    StaticJsonDocument<2048> doc; // Ajuste o tamanho do documento se necessário
     char timeBuffer[25];
 
     // Obtém o tempo atual
