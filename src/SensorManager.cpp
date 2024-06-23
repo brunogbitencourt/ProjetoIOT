@@ -37,9 +37,11 @@ void SensorManager::readSensors()
         }
         sensor->updateTimeStamp();
 
-        char payload[2048]; // Ajuste o tamanho do buffer aqui
-        this->createSensorJson(sensor, payload, sizeof(payload));
-        this->addMessageToQueue(payload);
+        if(mqttClient->isConnected()){
+            char payload[2048]; // Ajuste o tamanho do buffer aqui
+            this->createSensorJson(sensor, payload, sizeof(payload));
+            this->mqttClient->publish(TOPIC_SENSORS, payload);
+        }
     }
 }
 
@@ -51,7 +53,7 @@ void SensorManager::sendToMqtt()
         // Serial.print("Sending message to topic: ");
         // Serial.println(TOPIC_SENSORS);
         // Serial.println(message);
-        this->mqttClient->publish(TOPIC_SENSORS, message);
+        
     }
 }
 

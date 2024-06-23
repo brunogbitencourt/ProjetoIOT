@@ -48,10 +48,9 @@ void MqttClient::callback(char* topic, byte* payload, unsigned int length) {
         strncpy(message.topic, topic, sizeof(message.topic));
         strncpy(message.payload, (char*)payload, length);
         message.payload[length] = '\0';
+        
+        receiveMessage(topic, message.payload);
 
-        if (xQueueSend(mqttQueue, &message, portMAX_DELAY) != pdPASS) {
-            Serial.println("Failed to enqueue MQTT message");
-        }
     } else {
         Serial.println("Received payload is too large");
     }
@@ -59,12 +58,10 @@ void MqttClient::callback(char* topic, byte* payload, unsigned int length) {
 
 bool MqttClient::receiveMessage(char* topic, char* payload) {
     MqttMessage message;
-    if (xQueueReceive(mqttQueue, &message, 0) == pdPASS) {
-        strncpy(topic, message.topic, sizeof(message.topic));
-        strncpy(payload, message.payload, MAX_PAYLOAD_LENGTH);
-        return true;
-    }
-    return false;
+    strncpy(topic, message.topic, sizeof(message.topic));
+    strncpy(payload, message.payload, MAX_PAYLOAD_LENGTH);
+    
+    return true;
 }
 
 bool MqttClient::connect() {

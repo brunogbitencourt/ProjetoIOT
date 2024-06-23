@@ -93,8 +93,8 @@ void setup() {
     xTaskCreate(wifiTask, "Wifi Task", 2048, NULL, 1, NULL);
     xTaskCreate(mqttTask, "MQTT Task", 2048, NULL, 1, NULL);
     //xTaskCreate(mqttListenTask, "MQTT Listen Task", 4096, NULL, 1, NULL);
-    //xTaskCreate(actuatorTask, "Pump 01 Task", 4096, NULL, 1, NULL);
-    xTaskCreate(sensorToMqttTask, "Sensor to MQTT Task", 4096, NULL, 1, NULL);
+    xTaskCreate(actuatorTask, "Actuator Task", 4096, NULL, 1, NULL);
+    //xTaskCreate(sensorToMqttTask, "Sensor to MQTT Task", 4096, NULL, 1, NULL);
     //xTaskCreate(actuatorToMqttTask, "Actuator to MQTT Task", 4096, NULL, 1, NULL);
     //xTaskCreate(mqttPublishTask, "MQTT Publish Task", 4096, NULL, 1, NULL);
 }
@@ -269,27 +269,27 @@ void actuatorTask(void *pvParameters) {
     char payload[MAX_PAYLOAD_LENGTH];
 
     while(1) { 
-        if (mqttClient.receiveMessage(topic, payload)) {   
-            // payload = "AP_XX-YY", onde "AP_XX" é o ID do atuador e "YY" é o valor em porcentagem para definir o PWM.   
-            Serial.println("Recebeu no topico"+String(topic));
-            Serial.println("Mensagem: "+String(payload));
+        if(state == 4){
+            if (mqttClient.receiveMessage(topic, payload)) {   
+                // payload = "AP_XX-YY", onde "AP_XX" é o ID do atuador e "YY" é o valor em porcentagem para definir o PWM.   
+                Serial.println("Recebeu no topico"+String(topic));
+                Serial.println("Mensagem: "+String(payload));
 
-            String valSerial = String(payload);
-            int hyphenIndex = valSerial.indexOf('-');
-            if (hyphenIndex != -1) {
-                String id = valSerial.substring(0, hyphenIndex);
-                int percentage = valSerial.substring(hyphenIndex + 1).toInt();
-                Serial.println(percentage);
-                int pwmValue = map(percentage, 0, 100, 0, 255);
+                String valSerial = String(payload);
+                int hyphenIndex = valSerial.indexOf('-');
+                if (hyphenIndex != -1) {
+                    String id = valSerial.substring(0, hyphenIndex);
+                    int percentage = valSerial.substring(hyphenIndex + 1).toInt();
+                    Serial.println(percentage);
+                    int pwmValue = map(percentage, 0, 100, 0, 255);
 
-                setActuatorPwmById(id, pwmValue);
-            } else {
-                Serial.println("Invalid command format: " + valSerial);
+                    setActuatorPwmById(id, pwmValue);
+                } else {
+                    Serial.println("Invalid command format: " + valSerial);
+                }
+                strcpy(payload, "");
             }
-            strcpy(payload, "");
-
-        }
-
+        }    
         vTaskDelay(pdMS_TO_TICKS(2000)); // Espera 200 ms        
     }
 }
