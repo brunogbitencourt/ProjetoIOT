@@ -29,7 +29,7 @@ void ActuatorManager::updateActuatorPwmById(const char* id, int pwmValue)
             actuator->setPwmOutput(pwmValue);
             char message[512];
             createActuatorJson(actuator, pwmValue, message, sizeof(message));
-            addMessageToQueue(message);
+            this->mqttClient->publish(TOPIC_ACTUATORS, message);
             return;
         }
     }

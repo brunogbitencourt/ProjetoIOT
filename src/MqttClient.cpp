@@ -48,21 +48,23 @@ void MqttClient::callback(char* topic, byte* payload, unsigned int length) {
         strncpy(message.topic, topic, sizeof(message.topic));
         strncpy(message.payload, (char*)payload, length);
         message.payload[length] = '\0';
-        
-        receiveMessage(topic, message.payload);
-
+        xQueueSend(mqttQueue, &message, portMAX_DELAY);
     } else {
         Serial.println("Received payload is too large");
     }
 }
 
+
 bool MqttClient::receiveMessage(char* topic, char* payload) {
     MqttMessage message;
-    strncpy(topic, message.topic, sizeof(message.topic));
-    strncpy(payload, message.payload, MAX_PAYLOAD_LENGTH);
-    
-    return true;
+    if (xQueueReceive(mqttQueue, &message, (TickType_t)10) == pdTRUE) {
+        strncpy(topic, message.topic, sizeof(message.topic));
+        strncpy(payload, message.payload, MAX_PAYLOAD_LENGTH);
+        return true;
+    }
+    return false;
 }
+
 
 bool MqttClient::connect() {
     return mqttClient.connect(mqttId);

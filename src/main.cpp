@@ -57,8 +57,8 @@ Actuator motor2("AM_02", "Motor 2 - Tank 2", 1, MOTOR2_PIN, 0);
 Actuator valve1("AV_01", "Valve 1 - Tank 1", 2, VALVE1_PIN, 0);
 Actuator valve2("AV_02", "Valve 2 - Tank 2", 2, VALVE2_PIN, 0);
 
-//Sensor uss1("uss1", "Sensor Ultrassonico 1", 1, SENSOR_A1_EPIN, SENSOR_A1_TPIN);
-//Sensor uss2("uss2", "Sensor Ultrassonico 2", 1, SENSOR_A2_EPIN, SENSOR_A2_TPIN);
+Sensor uss1("uss1", "Sensor Ultrassonico 1", 1, SENSOR_A1_EPIN, SENSOR_A1_TPIN);
+Sensor uss2("uss2", "Sensor Ultrassonico 2", 1, SENSOR_A2_EPIN, SENSOR_A2_TPIN);
 Sensor ds1("ds1", "Sensor Digital 1", 2, SENSOR_D1_PIN, NULL);
 Sensor ds2("ds2", "Sensor Digital 2", 2, SENSOR_D2_PIN, NULL);
 
@@ -66,8 +66,8 @@ void setup() {
     Serial.begin(115200);
 
     // Adiciona sensores ao gerenciador
-    //sensorManager.addSensor(&uss1);
-    //sensorManager.addSensor(&uss2); 
+    sensorManager.addSensor(&uss1);
+    sensorManager.addSensor(&uss2); 
     sensorManager.addSensor(&ds1);
     sensorManager.addSensor(&ds2);
 
@@ -83,17 +83,20 @@ void setup() {
     // Inicializa o mutex
     mqttMutex = xSemaphoreCreateBinary();
     xSensorSemaphore = xSemaphoreCreateBinary();
+    xTaskCreate(wifiTask, "Wifi Task", 2048, NULL, 1, NULL);
+    xTaskCreate(mqttTask, "MQTT Task", 2048, NULL, 1, NULL);
+
+    vTaskDelay(pdMS_TO_TICKS(5000));
     // xTaskCreate(testeMotor, "Tank 1 task", 1024, NULL, 1, &handleTank01);
-    xTaskCreate(tankTask_01, "Tank 1 task", 1024, NULL, 1, &handleTank01);
-    xTaskCreate(tankTask_02, "Tank 2 Task", 1024, NULL, 1, &handleTank02);
-    xTaskCreate(tankEmptyTanks, "Empty Tank Task", 1024, NULL, 1, NULL);
+    xTaskCreate(tankTask_01, "Tank 1 task", 4096, NULL, 1, &handleTank01);
+    xTaskCreate(tankTask_02, "Tank 2 Task", 4096, NULL, 1, &handleTank02);
+    xTaskCreate(tankEmptyTanks, "Empty Tank Task", 4096, NULL, 1, NULL);
     xTaskCreate(sensorTask, "Sensor Task", 8192, NULL, 1, NULL);
 
     // Cria as tarefas FreeRTOS
-    xTaskCreate(wifiTask, "Wifi Task", 2048, NULL, 1, NULL);
-    xTaskCreate(mqttTask, "MQTT Task", 2048, NULL, 1, NULL);
+    
     //xTaskCreate(mqttListenTask, "MQTT Listen Task", 4096, NULL, 1, NULL);
-    xTaskCreate(actuatorTask, "Actuator Task", 4096, NULL, 1, NULL);
+    //xTaskCreate(actuatorTask, "Actuator Task", 4096, NULL, 1, NULL);
     //xTaskCreate(sensorToMqttTask, "Sensor to MQTT Task", 4096, NULL, 1, NULL);
     //xTaskCreate(actuatorToMqttTask, "Actuator to MQTT Task", 4096, NULL, 1, NULL);
     //xTaskCreate(mqttPublishTask, "MQTT Publish Task", 4096, NULL, 1, NULL);
@@ -272,8 +275,8 @@ void actuatorTask(void *pvParameters) {
         if(state == 4){
             if (mqttClient.receiveMessage(topic, payload)) {   
                 // payload = "AP_XX-YY", onde "AP_XX" é o ID do atuador e "YY" é o valor em porcentagem para definir o PWM.   
-                Serial.println("Recebeu no topico"+String(topic));
-                Serial.println("Mensagem: "+String(payload));
+                Serial.println("Recebeu no topico " + String(topic));
+                Serial.println("Mensagem: " + String(payload));
 
                 String valSerial = String(payload);
                 int hyphenIndex = valSerial.indexOf('-');
@@ -290,12 +293,13 @@ void actuatorTask(void *pvParameters) {
                 strcpy(payload, "");
             }
         }    
-        vTaskDelay(pdMS_TO_TICKS(2000)); // Espera 200 ms        
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Espera 2000 ms        
     }
 }
 
+
 void setActuatorPwmById(const String& id, int pwmValue) {
-    //actuatorManager.updateActuatorPwmById(id.c_str(), pwmValue);
+    actuatorManager.updateActuatorPwmById(id.c_str(), pwmValue);
 
     if (id == "AP_01") {
         Serial.println("Setting Pump 1 PWM to " + String(pwmValue));
@@ -377,7 +381,7 @@ void mqttListenTask(void *pvParameters) {
             // Serial.println("Waiting for MQTT connection...");
             xSemaphoreTake(mqttMutex, portMAX_DELAY); // Aguarda até que a conexão esteja ativa
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
 
